@@ -15,6 +15,9 @@
 //! before they are thrown. The grave is then written with `edit_blocks`, its
 //! block entity created by `block_entity` and filled in place, and its slots
 //! come from `block_entity_container` with the vanilla 9x6 menu (API 16/17).
+//! `living_death` remembers the damage type that killed the player, and
+//! `explosion_detonate` spares a grave from a blast; both settings and the two
+//! placement bounds come from `config/tombstone.json`.
 
 use std::collections::HashMap;
 use std::path::PathBuf;

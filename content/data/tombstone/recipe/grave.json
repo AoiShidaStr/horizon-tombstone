@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "SBS",
+    "SSS"
+  ],
+  "key": {
+    "S": "minecraft:stone_bricks",
+    "B": "minecraft:bone"
+  },
+  "result": {
+    "id": "tombstone:grave",
+    "count": 1
+  }
+}

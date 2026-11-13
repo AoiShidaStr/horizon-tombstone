@@ -25,9 +25,28 @@ here are original work.
 - The grave records the damage type that killed its owner and tells them when it is placed and when they
   open it (`tombstone.message.grave_cause`).
 - The grave has an item, so `/give <player> tombstone:grave` works and it can be placed by hand.
+- The grave is craftable (eight stone bricks around a bone) and has its own creative tab
+  (`itemGroup.tombstone.graves`, en/fr names).
 - If the grave cannot be written (chunk not loaded, an unexpected block), the items are left to
   vanilla: nothing is lost.
 - `keepInventory` is respected (the game does not call the hook then, so no grave is made).
+
+## Configuration
+
+`config/tombstone.json`, beside `options.txt` (on a dedicated server, beside `server.properties`).
+The file is written with these defaults the first time the mod runs; an unknown key or a broken file
+leaves the defaults in place.
+
+```json
+{ "owner_only": true, "protect_from_explosions": true, "grave_above": 4, "grave_below": 2 }
+```
+
+| Key | Meaning |
+|---|---|
+| `owner_only` | Only the grave's owner (and an operator) opens or breaks it. `false` lets anyone take it. |
+| `protect_from_explosions` | A blast leaves graves standing. `false` lets creeper and TNT blasts break them. |
+| `grave_above` | How far above the death spot a grave may look for room, 0 to 8. |
+| `grave_below` | How far below it may look, 0 to 4. |
 
 ## Files
 
@@ -70,6 +89,8 @@ it into every game it is installed in, where its hooks answer nothing on a clien
 ## Done
 
 - Inventory kept in a grave on death; nothing dropped.
+- `config/tombstone.json` with `owner_only`, `protect_from_explosions`, `grave_above` and `grave_below`,
+  written with its defaults on first use and read at each death/open/break.
 - Owner-only menu (54 slots) and owner-only breaking; operators and creative can clean up.
 - Grave placement searches the death column (feet, +4 up, -2 down) and only replaces air, fluids
   and plants; an unloadable or refused spot falls back to vanilla drops.
@@ -79,8 +100,8 @@ it into every game it is installed in, where its hooks answer nothing on a clien
 
 ## Missing / not done
 
-- **Config**: nothing is configurable (Corail Tombstone has a large config). No grave key item, no
-  soulbound enchantment, no perks, no grave decay/expiry, no grave souls or decorations.
+- **Config**: only the four settings above (Corail Tombstone has a large config). No grave key item,
+  no soulbound enchantment, no perks, no grave decay/expiry, no grave souls or decorations.
 - **Death cause / killer / XP**: the grave records the damage type (`minecraft:fall` reads as "fall") but
   not who dealt it (the `living_death` hook names a mob attacker, never a player) nor when. Experience is
   still dropped as vanilla orbs: no hook offers a dead player's XP to keep it.
@@ -88,8 +109,7 @@ it into every game it is installed in, where its hooks answer nothing on a clien
 - **Grave protection**: only player breaking and opening are gated; explosions are now spared, but a
   grave has no lock, no decay and no way to record or undo a blast that somehow removed it. Vanilla's
   `keepInventory` and `mobGriefing` are not consulted beyond the game's own rules.
-- **No in-game way to make a grave but `/give`**: the block has an item now, but no recipe and no
-  creative tab of its own.
+
 - **Client UI**: the grave uses the vanilla chest screen; there is no custom grave screen, and the
   grave does not render as a 3D headstone with a rotating soul.
 - **A mod block entity's items and a vanilla chest menu** are the only storage this uses; a hopper
