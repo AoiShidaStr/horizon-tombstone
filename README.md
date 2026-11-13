@@ -20,6 +20,11 @@ here are original work.
 - Breaking a grave is refused for anyone but its owner, a creative-mode player or an operator, so
   nobody else can empty it by mining. A grave broken by its owner empties onto the ground.
 - Hoppers cannot reach a grave's slots.
+- A grave is spared by explosions (a creeper or TNT blast leaves it standing); pistons already refuse to
+  move a mod block-entity block, and a solid grave is not something a fluid or fire can flow into.
+- The grave records the damage type that killed its owner and tells them when it is placed and when they
+  open it (`tombstone.message.grave_cause`).
+- The grave has an item, so `/give <player> tombstone:grave` works and it can be placed by hand.
 - If the grave cannot be written (chunk not loaded, an unexpected block), the items are left to
   vanilla: nothing is lost.
 - `keepInventory` is respected (the game does not call the hook then, so no grave is made).
@@ -51,6 +56,8 @@ tools/
 | Step | Hook | API |
 |---|---|---|
 | The dying player's inventory, before it is thrown | `loot_drops` (`entity` is `minecraft:player`, `player` is the owner) | 405 |
+| The damage type that killed them, recorded in the grave | `living_death` | 392 |
+| A grave is spared by a blast | `explosion_detonate` | 22 |
 | The grave block is written and its block entity created | `edit_blocks` + `block_entity` | 126 / 15 |
 | Its 54 slots and the 9x6 menu | `block_entity_container` (menu `minecraft:generic_9x6`) | 16 / 17 |
 | The block entity is filled in place, with its owner | `Host::change_mod_block_entity` (`native_with_mod_block_entity`) | 18 (host) |
@@ -66,21 +73,23 @@ it into every game it is installed in, where its hooks answer nothing on a clien
 - Owner-only menu (54 slots) and owner-only breaking; operators and creative can clean up.
 - Grave placement searches the death column (feet, +4 up, -2 down) and only replaces air, fluids
   and plants; an unloadable or refused spot falls back to vanilla drops.
-- Original block, model, texture and en/fr language.
-- Unit tests for the owner UUID round trip, the placement order and the replaceable-block list.
+- Original block, model, texture, item model and en/fr language.
+- Unit tests for the owner UUID round trip, the death cause round trip, the placement order and the
+  replaceable-block list.
 
 ## Missing / not done
 
 - **Config**: nothing is configurable (Corail Tombstone has a large config). No grave key item, no
   soulbound enchantment, no perks, no grave decay/expiry, no grave souls or decorations.
-- **Death cause / killer / XP**: the grave keeps items only. Experience is still dropped as
-  vanilla orbs, and the grave does not record the death message, the killer or the time.
+- **Death cause / killer / XP**: the grave records the damage type (`minecraft:fall` reads as "fall") but
+  not who dealt it (the `living_death` hook names a mob attacker, never a player) nor when. Experience is
+  still dropped as vanilla orbs: no hook offers a dead player's XP to keep it.
 - **Grave access**: no "grave key", no `/tbs` style commands, no grave list, no teleport to a grave.
-- **Grave protection**: a grave can be destroyed by an explosion or a piston/fluid, not only by a
-  player; only player breaking and opening are gated. Vanilla's `keepInventory` and `mobGriefing`
-  are not consulted beyond the game's own rules.
-- **No in-game way to obtain the grave item** (`"item": false`): it is only placed by a death, so it
-  does not appear in the creative inventory and `/give` cannot make one.
+- **Grave protection**: only player breaking and opening are gated; explosions are now spared, but a
+  grave has no lock, no decay and no way to record or undo a blast that somehow removed it. Vanilla's
+  `keepInventory` and `mobGriefing` are not consulted beyond the game's own rules.
+- **No in-game way to make a grave but `/give`**: the block has an item now, but no recipe and no
+  creative tab of its own.
 - **Client UI**: the grave uses the vanilla chest screen; there is no custom grave screen, and the
   grave does not render as a 3D headstone with a rotating soul.
 - **A mod block entity's items and a vanilla chest menu** are the only storage this uses; a hopper

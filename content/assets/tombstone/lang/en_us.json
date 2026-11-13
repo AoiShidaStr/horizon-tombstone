@@ -1,5 +1,6 @@
 {
   "block.tombstone.grave": "Grave",
   "tombstone.message.grave_placed": "Your items rest in a grave at %s %s %s.",
-  "tombstone.message.not_yours": "This grave belongs to someone else."
+  "tombstone.message.not_yours": "This grave belongs to someone else.",
+  "tombstone.message.grave_cause": "You died from %s."
 }
