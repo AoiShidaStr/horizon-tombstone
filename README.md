@@ -151,10 +151,13 @@ Runs (13 Nov 2026):
   (14m21s, mostly waiting on the shared target lock other mods' builds hold);
   `/opt/build/tombstone-test.log` — 4 passed, 0 failed.
 - Check of the tree with explosions, death cause, config and the grave item,
-  `/opt/build/tombstone-check3.log` — `cargo check -p mod-tombstone` exited 0 (23m15s in the
-  shared target). The six unit tests and the two engine flavours were still compiling when the
-  session ended, so **only the crate check is confirmed for this tree**; the only edit after it
-  was a module doc comment.
+  `/opt/build/tombstone-check3.log` — `cargo check -p mod-tombstone` exited 0 at 23:14 (23m15s in
+  the shared target). The six unit tests and the two engine flavours never got the build lock, so
+  **only the crate check is confirmed for this tree**. Two edits came after it: the module doc
+  comment, and moving the death-cause line from the action bar (hidden by the death screen) to
+  chat. That second edit is ~12 lines reusing the calls already checked, but its own
+  `cargo check` (`/opt/build/tombstone-check4.log`) was still waiting for the shared build
+  directory when the hour ended: **treat it as unverified until `check.sh full` passes**.
 - `cargo-horizon-mod check` on both freshly packed files: `tombstone.hmod` reads as a content mod
   (API 0.2, side both, nothing to run, now carrying the grave item and its item model) and
   `tombstone.hnmod` as native code pinned to `a85af177a8…` / mixins `5a64af93…`; both exit 0.
