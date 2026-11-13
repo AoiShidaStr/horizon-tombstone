@@ -120,6 +120,7 @@ dedicated-server engine (no default features) and the client flavour all exited 
 have not changed since.
 - Re-check of the current tree, `/opt/build/tombstone-verify.log` — `cargo check -p mod-tombstone`
 exited 0 (14m21s, mostly waiting on the shared target lock other mods' builds hold).
+- Unit tests re-run on the current tree, `/opt/build/tombstone-test.log` — 4 passed, 0 failed.
 - `cargo-horizon-mod check` on both packed files: `tombstone.hmod` reads as a content mod
 (API 0.2, side both, nothing to run) and `tombstone.hnmod` as native code pinned to
 `a85af177a8…` / mixins `5a64af93…`; both exit 0.
