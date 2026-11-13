@@ -113,10 +113,18 @@ cargo horizon-mod check target/tombstone.hmod    # content: API 0.2, side both, 
 cargo horizon-mod check target/tombstone.hnmod   # native: format native-1, pinned revisions
 ```
 
-Last full run (13 Nov 2026, `/opt/build/tombstone-check.log` and
-`/opt/build/tombstone-verify.log`): every step exited 0, the four unit tests passed,
-and both packages were read cleanly by `cargo-horizon-mod` 0.1.0 built from the pinned
-Horizon revision. The grave was **not** exercised in a live client/server session.
+Runs (13 Nov 2026):
+
+- Full pass, `/opt/build/tombstone-check.log` — mod crate check, the four unit tests, the
+dedicated-server engine (no default features) and the client flavour all exited 0. Sources
+have not changed since.
+- Re-check of the current tree, `/opt/build/tombstone-verify.log` — `cargo check -p mod-tombstone`
+exited 0 (14m21s, mostly waiting on the shared target lock other mods' builds hold).
+- `cargo-horizon-mod check` on both packed files: `tombstone.hmod` reads as a content mod
+(API 0.2, side both, nothing to run) and `tombstone.hnmod` as native code pinned to
+`a85af177a8…` / mixins `5a64af93…`; both exit 0.
+
+The grave was **not** exercised in a live client/server session: no game was launched.
 
 ## Licence
 
