@@ -1,0 +1,5 @@
+{
+  "block.tombstone.grave": "Tombeau",
+  "tombstone.message.grave_placed": "Vos affaires reposent dans un tombeau en %s %s %s.",
+  "tombstone.message.not_yours": "Ce tombeau appartient à quelqu'un d'autre."
+}

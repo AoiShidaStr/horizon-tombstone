@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "tombstone:block/grave" }
+  }
+}

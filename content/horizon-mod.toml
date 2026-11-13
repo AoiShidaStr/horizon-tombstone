@@ -1,0 +1,9 @@
+id = "tombstone"
+name = "Tombstone"
+version = "0.1.0"
+description = "On death, your inventory is kept in a grave that only you can open. Clean-room port of Corail Tombstone's core behaviour for Horizon."
+authors = ["Saison 2"]
+# A content mod: the grave block and its assets, no code (API 0.2).
+api = "0.2"
+side = "both"
+capabilities = ["registries"]
