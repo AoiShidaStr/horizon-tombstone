@@ -135,7 +135,7 @@ What the checks cover:
 
 ```sh
 cargo check -p mod-tombstone                     # the mod, server flavour
-cargo test  -p mod-tombstone                     # 4 unit tests, all pass
+cargo test  -p mod-tombstone                     # 6 unit tests
 cargo check -p horizon-native-game --no-default-features   # dedicated server
 cargo check -p horizon-native-game               # client flavour (default features)
 cargo horizon-mod check target/tombstone.hmod    # content: API 0.2, side both, content only
@@ -144,15 +144,20 @@ cargo horizon-mod check target/tombstone.hnmod   # native: format native-1, pinn
 
 Runs (13 Nov 2026):
 
-- Full pass, `/opt/build/tombstone-check.log` — mod crate check, the four unit tests, the
-dedicated-server engine (no default features) and the client flavour all exited 0. Sources
-have not changed since.
-- Re-check of the current tree, `/opt/build/tombstone-verify.log` — `cargo check -p mod-tombstone`
-exited 0 (14m21s, mostly waiting on the shared target lock other mods' builds hold).
-- Unit tests re-run on the current tree, `/opt/build/tombstone-test.log` — 4 passed, 0 failed.
-- `cargo-horizon-mod check` on both packed files: `tombstone.hmod` reads as a content mod
-(API 0.2, side both, nothing to run) and `tombstone.hnmod` as native code pinned to
-`a85af177a8…` / mixins `5a64af93…`; both exit 0.
+- Full pass on the first tree, `/opt/build/tombstone-check.log` — mod crate check, the four
+  unit tests, the dedicated-server engine (no default features) and the client flavour all
+  exited 0.
+- Earlier re-check, `/opt/build/tombstone-verify.log` — `cargo check -p mod-tombstone` exited 0
+  (14m21s, mostly waiting on the shared target lock other mods' builds hold);
+  `/opt/build/tombstone-test.log` — 4 passed, 0 failed.
+- Check of the tree with explosions, death cause, config and the grave item,
+  `/opt/build/tombstone-check3.log` — `cargo check -p mod-tombstone` exited 0 (23m15s in the
+  shared target). The six unit tests and the two engine flavours were still compiling when the
+  session ended, so **only the crate check is confirmed for this tree**; the only edit after it
+  was a module doc comment.
+- `cargo-horizon-mod check` on both freshly packed files: `tombstone.hmod` reads as a content mod
+  (API 0.2, side both, nothing to run, now carrying the grave item and its item model) and
+  `tombstone.hnmod` as native code pinned to `a85af177a8…` / mixins `5a64af93…`; both exit 0.
 
 The grave was **not** exercised in a live client/server session: no game was launched.
 

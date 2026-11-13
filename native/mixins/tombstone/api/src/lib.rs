@@ -237,8 +237,16 @@ impl Hooks for Tombstone {
                 ],
             ),
         );
-        if cause.is_some() {
-            tell_cause(host, owner, &cause);
+        // In chat, not the action bar: a death screen would hide it.
+        if let Some(cause) = cause {
+            host.tell(
+                owner,
+                Text::translate_with_fallback(
+                    "tombstone.message.grave_cause",
+                    "You died from %s.",
+                    &[Text::literal(pretty_cause(&cause))],
+                ),
+            );
         }
     }
 
