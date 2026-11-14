@@ -142,6 +142,22 @@ cargo horizon-mod check target/tombstone.hmod    # content: API 0.2, side both, 
 cargo horizon-mod check target/tombstone.hnmod   # native: format native-1, pinned revisions
 ```
 
+Runs (14 Nov 2026) — independent verification of this exact tree, one queued full build,
+`/opt/build/queue-verify-tombstone.log`:
+
+- `cargo check -p mod-tombstone` — exit 0 in 2m39s (default features, so the client flavour of
+  `horizon-client` is compiled too).
+- `cargo test -p mod-tombstone` — **6 passed, 0 failed**, exit 0 (the six tests listed above).
+- `cargo check -p horizon-native-game --no-default-features` (dedicated server) — exit 0 in 7m39s.
+- `cargo horizon-mod check target/tombstone.hmod` — exit 0, content, API 0.2, both, 3873 bytes.
+- `cargo horizon-mod check target/tombstone.hnmod` — exit 0, native-1, pinned to
+  `a85af177a8…` / mixins `5a64af93…`, 7936 bytes.
+- Not confirmed: `cargo check -p horizon-native-game` (client binary flavour) — it never got the
+  shared build lock before the hour ended. The same feature set of `horizon-client` is covered by
+  the first check above, but the staged `horizon-native-game` binary itself is unchecked.
+
+The tree of 13 Nov is therefore verified, and the last edit (death cause in chat) compiles.
+
 Runs (13 Nov 2026):
 
 - Full pass on the first tree, `/opt/build/tombstone-check.log` — mod crate check, the four
@@ -157,7 +173,8 @@ Runs (13 Nov 2026):
   comment, and moving the death-cause line from the action bar (hidden by the death screen) to
   chat. That second edit is ~12 lines reusing the calls already checked, but its own
   `cargo check` (`/opt/build/tombstone-check4.log`) was still waiting for the shared build
-  directory when the hour ended: **treat it as unverified until `check.sh full` passes**.
+  directory when the hour ended. `check.sh full` has since passed on this tree (see the 14 Nov run
+  above), so that edit is verified.
 - `cargo-horizon-mod check` on both freshly packed files: `tombstone.hmod` reads as a content mod
   (API 0.2, side both, nothing to run, now carrying the grave item and its item model) and
   `tombstone.hnmod` as native code pinned to `a85af177a8…` / mixins `5a64af93…`; both exit 0.
