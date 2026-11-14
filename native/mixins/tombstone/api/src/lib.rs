@@ -460,9 +460,12 @@ impl Hooks for Tombstone {
             && key_access()
                 .lock()
                 .ok()
-                .and_then(|mut access| access.remove(&player.uuid))
+                .and_then(|access| access.get(&player.uuid).cloned())
                 .is_some_and(|grave| grave == here);
         if allowed {
+            if let Ok(mut access) = key_access().lock() {
+                access.remove(&player.uuid);
+            }
             host.action_bar(
                 player.uuid,
                 Text::translate_with_fallback(

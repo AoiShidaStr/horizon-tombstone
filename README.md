@@ -24,9 +24,17 @@ here are original work.
   move a mod block-entity block, and a solid grave is not something a fluid or fire can flow into.
 - The grave records the damage type that killed its owner and tells them when it is placed and when they
   open it (`tombstone.message.grave_cause`).
-- The grave has an item, so `/give <player> tombstone:grave` works and it can be placed by hand.
+- A grave is an upright headstone with its own outline and collision, not a full cube: only the stone
+  slab and the headstone itself stop a player or a projectile.
+- The grave has an item, so `/give <player> tombstone:grave` works and it can be placed by hand; it
+  drops itself when broken.
+- Each death leaves its owner a **Grave's Key** (`tombstone:grave_key`), given on respawn and bound in
+  its saved data to that grave's dimension and position. Using it in the air points at the grave
+  (coordinates, dimension, distance). That also lets its holder open that one grave: an owner can hand
+  the key to a friend, who right-clicks it in the air and then opens the grave once. A key made in
+  creative is unbound and says so.
 - The grave is craftable (eight stone bricks around a bone) and has its own creative tab
-  (`itemGroup.tombstone.graves`, en/fr names).
+  (`itemGroup.tombstone.graves`, en/fr names) showing the grave and the Grave's Key.
 - If the grave cannot be written (chunk not loaded, an unexpected block), the items are left to
   vanilla: nothing is lost.
 - `keepInventory` is respected (the game does not call the hook then, so no grave is made).
@@ -54,8 +62,12 @@ leaves the defaults in place.
 content/                      the content mod (.hmod): the grave block, model, texture, language
   horizon-mod.toml
   data/tombstone/horizon/block/grave.json      the block (template minecraft:crafting_table:
-                                               no state, opens a menu when used)
-  assets/tombstone/...                         blockstate, model, 16x16 texture, en_us/fr_fr
+                                               no state, opens a menu when used; headstone
+                                               outline and collision)
+  data/tombstone/horizon/item/grave_key.json   the Grave's Key item
+  data/tombstone/loot_table/blocks/grave.json  the grave drops itself
+  assets/tombstone/...                         blockstate, headstone model, 16x16 textures,
+                                               the key's item model and texture, en_us/fr_fr
 native/                       the native mod (.hnmod)
   horizon-native.json         .hnmod manifest, pinned to Horizon a85af177
   mixins/tombstone/
@@ -76,6 +88,8 @@ tools/
 |---|---|---|
 | The dying player's inventory, before it is thrown | `loot_drops` (`entity` is `minecraft:player`, `player` is the owner) | 405 |
 | The damage type that killed them, recorded in the grave | `living_death` | 392 |
+| The grave's key, given when the dead player respawns | `player_respawned` | 115 |
+| A key used in the air points at its grave and unlocks it once | `use_item` | 13 |
 | A grave is spared by a blast | `explosion_detonate` | 22 |
 | The grave block is written and its block entity created | `edit_blocks` + `block_entity` | 126 / 15 |
 | Its 54 slots and the 9x6 menu | `block_entity_container` (menu `minecraft:generic_9x6`) | 16 / 17 |
@@ -94,9 +108,13 @@ it into every game it is installed in, where its hooks answer nothing on a clien
 - Owner-only menu (54 slots) and owner-only breaking; operators and creative can clean up.
 - Grave placement searches the death column (feet, +4 up, -2 down) and only replaces air, fluids
   and plants; an unloadable or refused spot falls back to vanilla drops.
-- Original block, model, texture, item model and en/fr language.
-- Unit tests for the owner UUID round trip, the death cause round trip, the placement order and the
-  replaceable-block list.
+- Original headstone block model and 16x16 textures; the grave drops itself when broken.
+- 26.3 item definitions under `assets/tombstone/items/` for the grave and the key (a missing
+  `items/<name>.json` leaves the creative slot blank).
+- Grave's Key: granted on respawn, bound to its grave in `minecraft:custom_data`, locates the grave
+  in the air and lets its holder open that grave once; unbound creative keys report they have no grave.
+- Unit tests for the owner UUID round trip, the death cause round trip, the grave-key round trip, the
+  placement order and the replaceable-block list.
 
 ## Missing / not done
 
@@ -105,7 +123,10 @@ it into every game it is installed in, where its hooks answer nothing on a clien
 - **Death cause / killer / XP**: the grave records the damage type (`minecraft:fall` reads as "fall") but
   not who dealt it (the `living_death` hook names a mob attacker, never a player) nor when. Experience is
   still dropped as vanilla orbs: no hook offers a dead player's XP to keep it.
-- **Grave access**: no "grave key", no `/tbs` style commands, no grave list, no teleport to a grave.
+- **Grave access**: the Grave's Key only locates and opens a grave; there is no enchanted key, no
+  teleport to a grave, no `/tbs` style command and no grave list. Opening with a key is a two-step
+  action (key in the air, then the grave), because the block-click hook cannot read the held stack's
+  saved data. An unbound key cannot be crafted into a bound one.
 - **Grave protection**: only player breaking and opening are gated; explosions are now spared, but a
   grave has no lock, no decay and no way to record or undo a blast that somehow removed it. Vanilla's
   `keepInventory` and `mobGriefing` are not consulted beyond the game's own rules.
