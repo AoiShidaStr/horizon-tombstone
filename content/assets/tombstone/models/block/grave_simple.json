@@ -1,0 +1,44 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "front": "tombstone:block/grave_simple",
+    "side": "tombstone:block/grave_simple_side",
+    "top": "tombstone:block/grave_simple_top",
+    "particle": "tombstone:block/grave_simple_side"
+  },
+  "elements": [
+    {
+      "from": [2, 0, 6],
+      "to": [14, 12, 10],
+      "faces": {
+        "north": {"uv": [2, 4, 14, 16], "texture": "#front"},
+        "east": {"uv": [0, 4, 4, 16], "texture": "#side"},
+        "south": {"uv": [2, 4, 14, 16], "texture": "#front"},
+        "west": {"uv": [0, 4, 4, 16], "texture": "#side"},
+        "up": {"uv": [2, 0, 14, 4], "texture": "#top"},
+        "down": {"uv": [2, 0, 14, 4], "texture": "#top"}
+      }
+    },
+    {
+      "from": [3, 12, 6],
+      "to": [13, 13, 10],
+      "faces": {
+        "north": {"uv": [3, 3, 13, 4], "texture": "#front"},
+        "east": {"uv": [0, 3, 4, 4], "texture": "#side"},
+        "south": {"uv": [3, 3, 13, 4], "texture": "#front"},
+        "west": {"uv": [0, 3, 4, 4], "texture": "#side"},
+        "up": {"uv": [3, 0, 13, 4], "texture": "#top"},
+        "down": {"uv": [3, 0, 13, 4], "texture": "#top"}
+      }
+    }
+  ],
+  "display": {
+    "thirdperson_righthand": {"rotation": [40, 0, 0], "scale": [0.4, 0.4, 0.4]},
+    "thirdperson_lefthand": {"rotation": [40, 0, 0], "scale": [0.4, 0.4, 0.4]},
+    "firstperson_righthand": {"rotation": [0, 45, 0], "scale": [0.5, 0.5, 0.5]},
+    "firstperson_lefthand": {"rotation": [0, 45, 0], "scale": [0.5, 0.5, 0.5]},
+    "ground": {"scale": [0.35, 0.35, 0.35]},
+    "gui": {"rotation": [30, 225, 0], "scale": [0.75, 0.75, 0.75]},
+    "fixed": {"rotation": [0, 90, 0], "scale": [0.6, 0.6, 0.6]}
+  }
+}
