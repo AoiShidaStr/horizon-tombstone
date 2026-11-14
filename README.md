@@ -78,7 +78,8 @@ tools/
   pack.py                     writes target/tombstone.hmod and .hnmod per docs/api/mod-files.md
   vps/sync.sh                 copy the mod folder to the build VPS and stage it
   vps/stage.sh                reproduce the launcher's native-mod API staging in a worktree
-  vps/check.sh                mod crate check, tests, server and client flavours
+  vps/check.sh                mod crate check, tests, server build and client check
+  vps/verify.sh               validate every build exit code and both packed bundles
   vps/pack_check.sh           pack locally, then run cargo-horizon-mod's reader over both files
 ```
 
