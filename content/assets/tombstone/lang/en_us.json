@@ -1,5 +1,8 @@
 {
   "block.tombstone.grave": "Grave",
+  "block.tombstone.grave_simple": "Weathered Headstone",
+  "block.tombstone.grave_cross": "Cross Headstone",
+  "block.tombstone.tombstone": "Soulstone Obelisk",
   "item.tombstone.grave_key": "Grave's Key",
   "itemGroup.tombstone.graves": "Tombstone",
   "tombstone.message.grave_placed": "Your items rest in a grave at %s %s %s.",

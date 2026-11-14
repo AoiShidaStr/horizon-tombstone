@@ -1,5 +1,8 @@
 {
   "block.tombstone.grave": "Tombeau",
+  "block.tombstone.grave_simple": "Stèle ancienne",
+  "block.tombstone.grave_cross": "Stèle en croix",
+  "block.tombstone.tombstone": "Obélisque des âmes",
   "item.tombstone.grave_key": "Clé de tombeau",
   "itemGroup.tombstone.graves": "Tombeaux",
   "tombstone.message.grave_placed": "Vos affaires reposent dans un tombeau en %s %s %s.",

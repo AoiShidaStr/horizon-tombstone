@@ -34,7 +34,7 @@ here are original work.
   the key to a friend, who right-clicks it in the air and then opens the grave once. A key made in
   creative is unbound and says so.
 - The grave is craftable (eight stone bricks around a bone) and has its own creative tab
-  (`itemGroup.tombstone.graves`, en/fr names) showing the grave and the Grave's Key.
+  (`itemGroup.tombstone.graves`, en/fr names) showing the four grave styles and the Grave's Key.
 - If the grave cannot be written (chunk not loaded, an unexpected block), the items are left to
   vanilla: nothing is lost.
 - `keepInventory` is respected (the game does not call the hook then, so no grave is made).
@@ -119,7 +119,10 @@ it into every game it is installed in, where its hooks answer nothing on a clien
 ## Missing / not done
 
 - **Config**: only the four settings above (Corail Tombstone has a large config). No soulbound
-  enchantment, no perks, no grave decay/expiry, no enchanted key, no grave souls or decorations.
+  enchantment, no perks, no grave decay/expiry, no enchanted key or grave souls. The three
+  decorative variants are static: no engraving, randomized appearance, fog or haunting soul.
+- **Other original systems**: no abandoned-grave structures or their loot, Grave Guardian, undead
+  companions, flying carpet, rituals or exploration scrolls/tablets.
 - **Death cause / killer / XP**: the grave records the damage type (`minecraft:fall` reads as "fall") but
   not who dealt it (the `living_death` hook names a mob attacker, never a player) nor when. Experience is
   still dropped as vanilla orbs: no hook offers a dead player's XP to keep it.
@@ -131,8 +134,8 @@ it into every game it is installed in, where its hooks answer nothing on a clien
   grave has no lock, no decay and no way to record or undo a blast that somehow removed it. Vanilla's
   `keepInventory` and `mobGriefing` are not consulted beyond the game's own rules.
 
-- **Client UI**: the grave uses the vanilla chest screen; there is no custom grave screen, and the
-  grave does not render as a 3D headstone with a rotating soul.
+- **Client UI**: the grave uses the vanilla chest screen; there is no custom grave screen or
+  rotating soul effect on the static 3D headstone.
 - **A mod block entity's items and a vanilla chest menu** are the only storage this uses; a hopper
   cannot reach them and a comparator reads nothing from a grave.
 - Not tested on a real client/server session by this run: only `cargo check`/`cargo test` and the

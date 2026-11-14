@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " D ",
+    "DDD",
+    "DBD"
+  ],
+  "key": {
+    "D": "minecraft:polished_deepslate",
+    "B": "minecraft:bone"
+  },
+  "result": {
+    "id": "tombstone:tombstone",
+    "count": 1
+  }
+}

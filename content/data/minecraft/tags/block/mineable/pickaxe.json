@@ -1,6 +1,9 @@
 {
   "replace": false,
   "values": [
-    "tombstone:grave"
+    "tombstone:grave",
+    "tombstone:grave_simple",
+    "tombstone:grave_cross",
+    "tombstone:tombstone"
   ]
 }

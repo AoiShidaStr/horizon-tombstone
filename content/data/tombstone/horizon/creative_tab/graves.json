@@ -3,6 +3,9 @@
   "icon": "tombstone:grave",
   "items": [
     "tombstone:grave",
+    "tombstone:grave_simple",
+    "tombstone:grave_cross",
+    "tombstone:tombstone",
     "tombstone:grave_key"
   ]
 }
