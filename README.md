@@ -118,8 +118,8 @@ it into every game it is installed in, where its hooks answer nothing on a clien
 
 ## Missing / not done
 
-- **Config**: only the four settings above (Corail Tombstone has a large config). No grave key item,
-  no soulbound enchantment, no perks, no grave decay/expiry, no grave souls or decorations.
+- **Config**: only the four settings above (Corail Tombstone has a large config). No soulbound
+  enchantment, no perks, no grave decay/expiry, no enchanted key, no grave souls or decorations.
 - **Death cause / killer / XP**: the grave records the damage type (`minecraft:fall` reads as "fall") but
   not who dealt it (the `living_death` hook names a mob attacker, never a player) nor when. Experience is
   still dropped as vanilla orbs: no hook offers a dead player's XP to keep it.
@@ -136,7 +136,8 @@ it into every game it is installed in, where its hooks answer nothing on a clien
 - **A mod block entity's items and a vanilla chest menu** are the only storage this uses; a hopper
   cannot reach them and a comparator reads nothing from a grave.
 - Not tested on a real client/server session by this run: only `cargo check`/`cargo test` and the
-  content checks below were run (see "Build and checks").
+  content checks below were run (see "Build and checks"). The headstone model, textures, creative
+  tab contents and the key flow have therefore not been seen in a running game.
 
 ## Build and checks
 
@@ -156,28 +157,31 @@ What the checks cover:
 
 ```sh
 cargo check -p mod-tombstone                     # the mod, server flavour
-cargo test  -p mod-tombstone                     # 6 unit tests
+cargo test  -p mod-tombstone                     # 7 unit tests
 cargo check -p horizon-native-game --no-default-features   # dedicated server
 cargo check -p horizon-native-game               # client flavour (default features)
 cargo horizon-mod check target/tombstone.hmod    # content: API 0.2, side both, content only
 cargo horizon-mod check target/tombstone.hnmod   # native: format native-1, pinned revisions
 ```
 
-Runs (14 Nov 2026) — independent verification of this exact tree, one queued full build,
-`/opt/build/queue-verify-tombstone.log`:
+Runs (14 Nov 2026) — verification of this exact tree, one queued full build,
+`/opt/build/queue-tombstone-buffy.log`, started 04:53 and finished 05:07:
 
-- `cargo check -p mod-tombstone` — exit 0 in 2m39s (default features, so the client flavour of
+- `cargo check -p mod-tombstone` — exit 0 in 2m45s (default features, so the client flavour of
   `horizon-client` is compiled too).
-- `cargo test -p mod-tombstone` — **6 passed, 0 failed**, exit 0 (the six tests listed above).
-- `cargo check -p horizon-native-game --no-default-features` (dedicated server) — exit 0 in 7m39s.
-- `cargo horizon-mod check target/tombstone.hmod` — exit 0, content, API 0.2, both, 3873 bytes.
+- `cargo test -p mod-tombstone` — **7 passed, 0 failed**, exit 0 (the six earlier tests plus the
+  grave-key round trip).
+- `cargo check -p horizon-native-game --no-default-features` (dedicated server) — exit 0 in 11s
+  (the shared target was warm).
+- `cargo check -p horizon-native-game` (client binary flavour) — exit 0 in 2m48s.
+- `cargo horizon-mod check target/tombstone.hmod` — exit 0, content, API 0.2, both, 7193 bytes,
+  SHA-256 `e70f5029c2535eaf…`.
 - `cargo horizon-mod check target/tombstone.hnmod` — exit 0, native-1, pinned to
-  `a85af177a8…` / mixins `5a64af93…`, 7936 bytes.
-- Not confirmed: `cargo check -p horizon-native-game` (client binary flavour) — it never got the
-  shared build lock before the hour ended. The same feature set of `horizon-client` is covered by
-  the first check above, but the staged `horizon-native-game` binary itself is unchecked.
+  `a85af177a8…` / mixins `5a64af93…`, 10099 bytes, SHA-256 `5cd6d4d3ba0110c3…`.
 
-The tree of 13 Nov is therefore verified, and the last edit (death cause in chat) compiles.
+Nothing is launched in a game: the headstone model, the key's item icon, the creative tab and the
+key flow are checked at compile and bundle level only. The grave was **not** exercised in a live
+client/server session.
 
 Runs (13 Nov 2026):
 
