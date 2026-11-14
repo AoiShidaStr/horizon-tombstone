@@ -2,6 +2,7 @@
   "title": "itemGroup.tombstone.graves",
   "icon": "tombstone:grave",
   "items": [
-    "tombstone:grave"
+    "tombstone:grave",
+    "tombstone:grave_key"
   ]
 }

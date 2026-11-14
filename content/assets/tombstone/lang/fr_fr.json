@@ -1,7 +1,16 @@
 {
   "block.tombstone.grave": "Tombeau",
+  "item.tombstone.grave_key": "Clé de tombeau",
   "itemGroup.tombstone.graves": "Tombeaux",
   "tombstone.message.grave_placed": "Vos affaires reposent dans un tombeau en %s %s %s.",
   "tombstone.message.not_yours": "Ce tombeau appartient à quelqu'un d'autre.",
-  "tombstone.message.grave_cause": "Vous êtes mort de : %s."
+  "tombstone.message.grave_cause": "Vous êtes mort de : %s.",
+  "tombstone.message.key_given": "Une clé de votre tombeau apparaît dans votre inventaire.",
+  "tombstone.message.key_no_room": "Pas de place pour la clé de votre tombeau ; libérez un emplacement et elle sera donnée à votre prochaine réapparition.",
+  "tombstone.message.key_points": "Votre tombeau est en %s %s %s dans %s, à %s blocs.",
+  "tombstone.message.key_points_here": "Votre tombeau est en %s %s %s, juste ici.",
+  "tombstone.message.key_other_dimension": "Votre tombeau est dans %s en %s %s %s.",
+  "tombstone.message.key_unbound": "Cette clé n'est liée à aucun tombeau.",
+  "tombstone.message.key_attune": "Utilisez d'abord la clé en l'air pour la lier à son tombeau.",
+  "tombstone.message.key_opens": "La clé tourne ; le tombeau s'ouvre."
 }

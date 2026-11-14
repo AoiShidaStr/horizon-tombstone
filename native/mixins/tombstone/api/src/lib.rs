@@ -18,6 +18,11 @@
 //! `living_death` remembers the damage type that killed the player, and
 //! `explosion_detonate` spares a grave from a blast; both settings and the two
 //! placement bounds come from `config/tombstone.json`.
+//!
+//! Each death also leaves the player a Grave's Key: on respawn they are given a
+//! key whose saved data names the grave's dimension and position. Using the key
+//! in the air points at that grave; a key attuned that way lets its holder open
+//! the grave once, so an owner can hand it to a friend.
 
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -27,7 +32,8 @@ use horizon_client::mod_api::serde_json;
 use horizon_client::mod_api::{
     BlockEntityContainerEvent, BlockEntityEvent, Compound, DestroyBlockEvent,
     ExplosionDetonateEvent, Flow, Hooks, Host, ItemStack, LivingDeathEvent, LootDropsEvent,
-    ModBlockEntity, ModContainer, NativeBlockEdit, NativeBlockRun, RightClickBlockEvent, Tag, Text,
+    ModBlockEntity, ModContainer, NativeBlockEdit, NativeBlockRun, PlayerRespawnedEvent,
+    RightClickBlockEvent, Tag, Text, UseItemEvent,
 };
 
 /// The block that keeps a player's items.
@@ -38,6 +44,13 @@ const GRAVE_ENTITY: &str = "tombstone:grave";
 const OWNER_KEY: &str = "Owner";
 /// The damage type that killed the owner, saved in the grave's compound.
 const CAUSE_KEY: &str = "DeathCause";
+/// The item a death leaves its owner, pointing at their grave.
+const GRAVE_KEY: &str = "tombstone:grave_key";
+/// The grave a key is bound to, in the key's `minecraft:custom_data`.
+const KEY_X: &str = "GraveX";
+const KEY_Y: &str = "GraveY";
+const KEY_Z: &str = "GraveZ";
+const KEY_DIMENSION: &str = "GraveDimension";
 /// Six rows of nine (`minecraft:generic_9x6`): the 36 inventory slots, the
 /// four armour slots and the off hand fit with room to spare.
 const SLOTS: usize = 54;
@@ -140,6 +153,37 @@ fn pending_deaths() -> &'static Mutex<HashMap<u32, String>> {
     PENDING_DEATHS.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
+/// Where a grave stands: its dimension and block position.
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct GraveRef {
+    dimension: String,
+    pos: [i32; 3],
+}
+
+/// The grave of a player who died and will be given its key when they respawn.
+static PENDING_KEYS: OnceLock<Mutex<HashMap<u128, GraveRef>>> = OnceLock::new();
+
+fn pending_keys() -> &'static Mutex<HashMap<u128, GraveRef>> {
+    PENDING_KEYS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+/// Graves a player may open with a key they used: a friend reads the key first,
+/// then opens that one grave. Taken away once the grave opens.
+static KEY_ACCESS: OnceLock<Mutex<HashMap<u128, GraveRef>>> = OnceLock::new();
+
+fn key_access() -> &'static Mutex<HashMap<u128, GraveRef>> {
+    KEY_ACCESS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+impl GraveRef {
+    fn of(dimension: &str, pos: [i32; 3]) -> Self {
+        Self {
+            dimension: dimension.to_owned(),
+            pos,
+        }
+    }
+}
+
 impl Hooks for Tombstone {
     /// A player is about to die: keep the damage type that killed them so the
     /// grave made by the same tick's `loot_drops` can record it. Never stops
@@ -224,6 +268,15 @@ impl Hooks for Tombstone {
         if !place_grave(host, &dimension, pos, owner, &stacks, cause.as_deref()) {
             return;
         }
+        // Read first, then handed over on respawn: the death is still clearing
+        // this inventory, so a stack given now would go with the drops.
+        let grave = GraveRef::of(&dimension, pos);
+        if let Ok(mut keys) = pending_keys().lock() {
+            keys.insert(owner, grave.clone());
+        }
+        if let Ok(mut access) = key_access().lock() {
+            access.remove(&owner);
+        }
         event.drops.clear();
         host.tell(
             owner,
@@ -250,7 +303,126 @@ impl Hooks for Tombstone {
         }
     }
 
-    /// Only the grave's owner (and an operator) opens it.
+    /// The player respawned: give them the key their death left, pointing at
+    /// the grave. Nothing if no grave was made or their inventory is full.
+    fn player_respawned(
+        &self,
+        host: &mut dyn Host,
+        event: &mut PlayerRespawnedEvent<'_>,
+    ) {
+        let Some(grave) = pending_keys()
+            .lock()
+            .ok()
+            .and_then(|mut keys| keys.remove(&event.player))
+        else {
+            return;
+        };
+        let Some(key) = key_stack(&grave) else {
+            return;
+        };
+        if host.give_stack(event.player, key).is_some() {
+            host.tell(
+                event.player,
+                Text::translate_with_fallback(
+                    "tombstone.message.key_no_room",
+                    "No room for your Grave's Key; clear a slot and it will be given on your next respawn.",
+                    &[],
+                ),
+            );
+            // Kept for that next respawn rather than lost.
+            if let Ok(mut keys) = pending_keys().lock() {
+                keys.insert(event.player, grave);
+            }
+            return;
+        }
+        host.tell(
+            event.player,
+            Text::translate_with_fallback(
+                "tombstone.message.key_given",
+                "A Grave's Key to your grave appears in your inventory.",
+                &[],
+            ),
+        );
+    }
+
+    /// A Grave's Key used in the air: point at the grave it is bound to and let
+    /// its holder open that grave once.
+    fn use_item(&self, host: &mut dyn Host, event: &mut UseItemEvent<'_>) -> Flow {
+        if &*event.stack.item != GRAVE_KEY {
+            return Flow::Continue;
+        }
+        let Some(player) = host.acting_player() else {
+            return Flow::Cancel;
+        };
+        let Some(grave) = key_grave(event.stack) else {
+            host.action_bar(
+                player.uuid,
+                Text::translate_with_fallback(
+                    "tombstone.message.key_unbound",
+                    "This key is not bound to a grave.",
+                    &[],
+                ),
+            );
+            return Flow::Cancel;
+        };
+        // The holder may now open this grave once, whatever their name.
+        if let Ok(mut access) = key_access().lock() {
+            access.insert(player.uuid, grave.clone());
+        }
+        let pos = grave.pos;
+        if player.dimension == grave.dimension {
+            let dx = player.position[0] - f64::from(pos[0]) - 0.5;
+            let dy = player.position[1] - f64::from(pos[1]) - 0.5;
+            let dz = player.position[2] - f64::from(pos[2]) - 0.5;
+            let distance = (dx * dx + dy * dy + dz * dz).sqrt().round() as i64;
+            if distance <= 1 {
+                host.tell(
+                    player.uuid,
+                    Text::translate_with_fallback(
+                        "tombstone.message.key_points_here",
+                        "Your grave is at %s %s %s, right here.",
+                        &[
+                            Text::literal(pos[0].to_string()),
+                            Text::literal(pos[1].to_string()),
+                            Text::literal(pos[2].to_string()),
+                        ],
+                    ),
+                );
+            } else {
+                host.tell(
+                    player.uuid,
+                    Text::translate_with_fallback(
+                        "tombstone.message.key_points",
+                        "Your grave is at %s %s %s in %s, %s blocks away.",
+                        &[
+                            Text::literal(pos[0].to_string()),
+                            Text::literal(pos[1].to_string()),
+                            Text::literal(pos[2].to_string()),
+                            Text::literal(player.dimension.clone()),
+                            Text::literal(distance.to_string()),
+                        ],
+                    ),
+                );
+            }
+        } else {
+            host.tell(
+                player.uuid,
+                Text::translate_with_fallback(
+                    "tombstone.message.key_other_dimension",
+                    "Your grave is in %s at %s %s %s.",
+                    &[
+                        Text::literal(grave.dimension.clone()),
+                        Text::literal(pos[0].to_string()),
+                        Text::literal(pos[1].to_string()),
+                        Text::literal(pos[2].to_string()),
+                    ],
+                ),
+            );
+        }
+        Flow::Cancel
+    }
+
+    /// Only the grave's owner (and an operator, or a key's holder) opens it.
     fn right_click_block(
         &self,
         host: &mut dyn Host,
@@ -279,14 +451,42 @@ impl Hooks for Tombstone {
         if !Config::load(&*host).owner_only {
             return Flow::Continue;
         }
-        host.action_bar(
-            player.uuid,
+        let holding_key = host
+            .held()
+            .is_some_and(|(item, _, _)| item == GRAVE_KEY);
+        let dimension = player.dimension.clone();
+        let here = GraveRef::of(&dimension, event.pos);
+        let allowed = holding_key
+            && key_access()
+                .lock()
+                .ok()
+                .and_then(|mut access| access.remove(&player.uuid))
+                .is_some_and(|grave| grave == here);
+        if allowed {
+            host.action_bar(
+                player.uuid,
+                Text::translate_with_fallback(
+                    "tombstone.message.key_opens",
+                    "The key turns; the grave opens.",
+                    &[],
+                ),
+            );
+            return Flow::Continue;
+        }
+        let message = if holding_key {
+            Text::translate_with_fallback(
+                "tombstone.message.key_attune",
+                "Use the key in the air first to bind it to its grave.",
+                &[],
+            )
+        } else {
             Text::translate_with_fallback(
                 "tombstone.message.not_yours",
                 "This grave belongs to someone else.",
                 &[],
-            ),
-        );
+            )
+        };
+        host.action_bar(player.uuid, message);
         Flow::Cancel
     }
 
@@ -437,6 +637,55 @@ fn uuid_tag(uuid: u128) -> Tag {
     ])
 }
 
+/// The key item a grave hands its owner, with the grave's place in its saved
+/// data (`minecraft:custom_data`). None if the item root is refused.
+fn key_stack(grave: &GraveRef) -> Option<ItemStack> {
+    let mut data = Compound::new();
+    data.insert(KEY_X.into(), Tag::Int(grave.pos[0]));
+    data.insert(KEY_Y.into(), Tag::Int(grave.pos[1]));
+    data.insert(KEY_Z.into(), Tag::Int(grave.pos[2]));
+    data.insert(
+        KEY_DIMENSION.into(),
+        Tag::String(grave.dimension.as_str().into()),
+    );
+    let mut components = Compound::new();
+    components.insert("minecraft:custom_data".into(), Tag::Compound(data));
+    let mut root = Compound::new();
+    root.insert("id".into(), Tag::String(GRAVE_KEY.into()));
+    root.insert("count".into(), Tag::Int(1));
+    root.insert("components".into(), Tag::Compound(components));
+    ItemStack::from_nbt(&root)
+}
+
+/// The grave a key points at, read from its saved data. None for another item,
+/// a key made in creative (never bound), or broken data.
+fn key_grave(stack: &ItemStack) -> Option<GraveRef> {
+    if &*stack.item != GRAVE_KEY {
+        return None;
+    }
+    let data = stack.custom_data()?;
+    let int = |key: &str| match data
+        .iter()
+        .find(|(name, _)| name.to_string_lossy() == key)
+        .map(|(_, tag)| tag)
+    {
+        Some(Tag::Int(value)) => Some(*value),
+        _ => None,
+    };
+    let dimension = match data
+        .iter()
+        .find(|(name, _)| name.to_string_lossy() == KEY_DIMENSION)
+        .map(|(_, tag)| tag)
+    {
+        Some(Tag::String(value)) => value.to_string_lossy(),
+        _ => return None,
+    };
+    Some(GraveRef::of(
+        &dimension,
+        [int(KEY_X)?, int(KEY_Y)?, int(KEY_Z)?],
+    ))
+}
+
 /// Tells a player how they died, when the grave knows.
 fn tell_cause(host: &mut dyn Host, player: u128, cause: &Option<String>) {
     if let Some(cause) = cause {
@@ -562,6 +811,21 @@ mod tests {
         let mut again = Config::default();
         again.read(&written);
         assert_eq!(again, Config::default());
+    }
+
+    #[test]
+    fn a_grave_key_survives_the_round_trip_and_matches_its_grave() {
+        let grave = GraveRef::of("minecraft:the_nether", [12, 70, -34]);
+        let stack = key_stack(&grave).expect("a key stack");
+        assert_eq!(&*stack.item, GRAVE_KEY);
+        assert_eq!(key_grave(&stack), Some(grave.clone()));
+        assert_eq!(stack.custom_data().map(Compound::len), Some(4));
+
+        // Another item is not a key, and an unbound creative key names no grave.
+        let other = ItemStack::new("minecraft:iron_ingot", 1);
+        assert_eq!(key_grave(&other), None);
+        let blank = ItemStack::new(GRAVE_KEY, 1);
+        assert_eq!(key_grave(&blank), None);
     }
 
     #[test]

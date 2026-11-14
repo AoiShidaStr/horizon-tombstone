@@ -3,7 +3,20 @@
   "properties": {
     "hardness": 2.5,
     "explosion_resistance": 6.0,
-    "sounds": "minecraft:stone"
+    "sounds": "minecraft:stone",
+    "occludes": false
+  },
+  "shapes": {
+    "default": [
+      [0.0625, 0.0, 0.3125, 0.9375, 0.125, 0.6875],
+      [0.125, 0.125, 0.375, 0.875, 0.9375, 0.625]
+    ]
+  },
+  "collision_shapes": {
+    "default": [
+      [0.0625, 0.0, 0.3125, 0.9375, 0.125, 0.6875],
+      [0.125, 0.125, 0.375, 0.875, 0.9375, 0.625]
+    ]
   },
   "item": true
 }
