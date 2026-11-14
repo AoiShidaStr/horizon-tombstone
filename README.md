@@ -168,8 +168,21 @@ cargo horizon-mod check target/tombstone.hmod    # content: API 0.2, side both, 
 cargo horizon-mod check target/tombstone.hnmod   # native: format native-1, pinned revisions
 ```
 
-Runs (14 Nov 2026) — verification of this exact tree, one queued full build,
-`/opt/build/queue-tombstone-buffy.log`, started 04:53 and finished 05:07:
+Latest run (14 Nov 2026), one queued full verification, `/opt/build/queue-tombstone-rebuild.log`,
+started 08:21 and finished 08:32:
+
+- `cargo check -p mod-tombstone` — exit 0 in 2m21s.
+- `cargo test -p mod-tombstone` — **7 passed, 0 failed**, exit 0.
+- `cargo build -p horizon-native-game --no-default-features` (dedicated server) — exit 0 in 9.59s.
+- `cargo check -p horizon-native-game` (client flavour) — exit 0 in 2m30s.
+- `cargo-horizon-mod horizon-mod check tombstone.hmod` — exit 0, content, API 0.2, both,
+  20312 bytes, SHA-256 `a2e7233886064bc5…`.
+- `cargo-horizon-mod horizon-mod check tombstone.hnmod` — exit 0, native-1, pinned to
+  `a85af177a8…` / mixins `5a64af93…`, 10099 bytes, SHA-256 `5cd6d4d3ba0110c3…`.
+- All 35 content JSON files parse, and all five creative-tab entries have their assets and a
+  survival source (recipes for blocks, respawn grant for the key).
+
+Prior run (14 Nov 2026), `/opt/build/queue-tombstone-buffy.log`, started 04:53 and finished 05:07:
 
 - `cargo check -p mod-tombstone` — exit 0 in 2m45s (default features, so the client flavour of
   `horizon-client` is compiled too).
