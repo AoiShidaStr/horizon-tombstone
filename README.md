@@ -161,7 +161,7 @@ What the checks cover:
 ```sh
 cargo check -p mod-tombstone                     # the mod, server flavour
 cargo test  -p mod-tombstone                     # 7 unit tests
-cargo check -p horizon-native-game --no-default-features   # dedicated server
+cargo build -p horizon-native-game --no-default-features   # dedicated server
 cargo check -p horizon-native-game               # client flavour (default features)
 cargo horizon-mod check target/tombstone.hmod    # content: API 0.2, side both, content only
 cargo horizon-mod check target/tombstone.hnmod   # native: format native-1, pinned revisions

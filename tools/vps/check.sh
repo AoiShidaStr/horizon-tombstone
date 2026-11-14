@@ -13,8 +13,8 @@ if [ "$1" = full ]; then
   echo "== mod tests"; date
   nice -n 10 cargo test -p mod-tombstone --message-format short 2>&1 | grep -vE "^\s+(Compiling|Checking)" | tail -40
   echo "test_exit=${PIPESTATUS[0]}"
-  echo "== server engine check (no default features)"; date
-  nice -n 10 cargo check -p horizon-native-game --no-default-features --message-format short 2>&1 | grep -vE "^\s+(Compiling|Checking)"
+  echo "== dedicated-server engine build (no default features)"; date
+  nice -n 10 cargo build -p horizon-native-game --no-default-features --message-format short 2>&1 | grep -vE "^\s+(Compiling|Checking)"
   echo "server_exit=${PIPESTATUS[0]}"
   echo "== client flavour check (default features)"; date
   nice -n 10 cargo check -p horizon-native-game --message-format short 2>&1 | grep -vE "^\s+(Compiling|Checking)"
